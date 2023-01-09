@@ -222,13 +222,13 @@ class BiEncoderAttentionWithRationaleClassification(nn.Module):
 			loss_fct = MSELoss()
 			# Only keep active parts of the loss
 			if attention_mask_RP is not None:
-				loss_rationales = loss_fct(logits_rationales.view(-1, self.rationale_num_labels), rationale_labels.view(-1))
+				loss_rationales = loss_fct(logits_rationales.view(-1, self.rationale_num_labels), rationale_labels.view(1,-1))
 			else:
-				loss_rationales = loss_fct(logits_rationales.view(-1, self.rationale_num_labels), rationale_labels.view(-1))
+				loss_rationales = loss_fct(logits_rationales.view(-1, self.rationale_num_labels), rationale_labels.view(1,-1))
 
 		if empathy_labels is not None:
 			loss_fct = MSELoss()
-			loss_empathy = loss_fct(logits_empathy.view(-1, 1), empathy_labels.float().view(-1))
+			loss_empathy = loss_fct(logits_empathy.view(-1, 1), empathy_labels.float().view(1,-1))
 
 			loss = lambda_EI * loss_empathy + lambda_RE * loss_rationales
 			outputs = (loss, loss_empathy, loss_rationales) + outputs
