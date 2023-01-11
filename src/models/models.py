@@ -240,24 +240,3 @@ class BiEncoderAttentionWithRationaleClassification(nn.Module):
 			outputs = (loss, loss_empathy, loss_rationales) + outputs
 
 		return outputs  # (loss), (scores_empathy, scores_rationales), (hidden_states), (attentions)
-
-
-
-class RobertaClassificationHead(nn.Module):
-	"""Head for sentence-level classification tasks."""
-
-	def __init__(self, hidden_dropout_prob=0.1, hidden_size=768, empathy_num_labels=1):
-		super().__init__()
-
-		self.dense = nn.Linear(hidden_size, hidden_size)
-		self.dropout = nn.Dropout(hidden_dropout_prob)
-		self.out_proj = nn.Linear(hidden_size, empathy_num_labels)
-
-	def forward(self, features, **kwargs):
-		x = features[:, :]  # take <s> token (equiv. to [CLS])
-		x = self.dropout(x)
-		x = self.dense(x)
-		x = torch.relu(x)
-		x = self.dropout(x)
-		x = self.out_proj(x)
-		return x
