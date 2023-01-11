@@ -5,11 +5,16 @@ import math
 from collections import defaultdict
 
 
-def flat_accuracy(preds, labels, axis_=2):
-	pred_flat = np.argmax(preds, axis=axis_).flatten()
-	labels_flat = labels.flatten()
+def flat_accuracy(preds, labels, num_labels):
+        preds = preds.flatten()
+        labels = labels.flatten()
 
-	return np.sum(pred_flat == labels_flat) / len(labels_flat)
+        pred_flat = np.array([round(i*(num_labels-1)) for i in preds])
+        labels_flat = np.array([round(i*(num_labels-1)) for i in labels])
+
+        pred_flat = np.array([max(min(i, num_labels-1), 0) for i in pred_flat])
+
+        return np.sum(pred_flat == labels_flat) / len(labels_flat)
 
 def flat_accuracy_rationale(preds, labels, classification_labels, lens, axis_=2):
 	preds_li = np.argmax(preds, axis=axis_)

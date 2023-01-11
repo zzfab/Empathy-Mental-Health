@@ -127,7 +127,7 @@ class ResponderEncoder(BertPreTrainedModel):
 
 class BiEncoderAttentionWithRationaleClassification(nn.Module):
 
-	def __init__(self, hidden_dropout_prob=0.2, rationale_num_labels=2, empathy_num_labels=3, hidden_size=768, attn_heads = 1):
+	def __init__(self, hidden_dropout_prob=0.2, rationale_num_labels=2, empathy_num_labels=1, hidden_size=768, attn_heads = 1):
 		super().__init__()
 
 		self.dropout = nn.Dropout(hidden_dropout_prob)
@@ -232,8 +232,8 @@ class BiEncoderAttentionWithRationaleClassification(nn.Module):
 				loss_rationales = loss_fct(logits_rationales.view(-1, self.rationale_num_labels), rationale_labels.view(-1))
 
 		if empathy_labels is not None:
-			loss_fct = CrossEntropyLoss()
-			loss_empathy = loss_fct(logits_empathy.view(-1, self.empathy_num_labels), empathy_labels.view(-1))
+			loss_fct = MSELoss()
+			loss_empathy = loss_fct(logits_empathy.view(-1, self.empathy_num_labels), empathy_labels.float())
 
 			loss = lambda_EI * loss_empathy + lambda_RE * loss_rationales
 
@@ -246,7 +246,7 @@ class BiEncoderAttentionWithRationaleClassification(nn.Module):
 class RobertaClassificationHead(nn.Module):
 	"""Head for sentence-level classification tasks."""
 
-	def __init__(self, hidden_dropout_prob=0.1, hidden_size=768, empathy_num_labels=3):
+	def __init__(self, hidden_dropout_prob=0.1, hidden_size=768, empathy_num_labels=1):
 		super().__init__()
 
 		self.dense = nn.Linear(hidden_size, hidden_size)

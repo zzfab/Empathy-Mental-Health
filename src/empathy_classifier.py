@@ -140,13 +140,13 @@ class EmpathyClassifier():
 
 				
 			logits_empathy_ER = logits_empathy_ER.detach().cpu().numpy().tolist()
-			predictions_ER = np.argmax(logits_empathy_ER, axis=1).flatten()
-
+			print(logits_empathy_ER)
+			predictions_ER = np.array([round(i[0] * (3-1)) for i in logits_empathy_ER])
 			logits_empathy_IP = logits_empathy_IP.detach().cpu().numpy().tolist()
-			predictions_IP = np.argmax(logits_empathy_IP, axis=1).flatten()
+			predictions_IP = np.array([round(i[0]*(3-1)) for i in logits_empathy_IP])
 
 			logits_empathy_EX = logits_empathy_EX.detach().cpu().numpy().tolist()
-			predictions_EX = np.argmax(logits_empathy_EX, axis=1).flatten()
+			predictions_EX = np.array([round(i[0] * (3-1)) for i in logits_empathy_EX])
 
 
 			logits_rationale_ER = logits_rationale_ER.detach().cpu().numpy()
