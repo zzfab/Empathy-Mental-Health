@@ -1,7 +1,7 @@
 from .roberta import RobertaForTokenClassification, RobertaModel
 import torch
 import torch.nn as nn
-from torch.nn import CrossEntropyLoss, MSELoss
+from torch.nn import CrossEntropyLoss, MSELoss,L1Loss
 import math
 import torch.nn.functional as F
 
@@ -233,7 +233,7 @@ class BiEncoderAttentionWithRationaleClassification(nn.Module):
 
 		if empathy_labels is not None:
 			loss_fct = MSELoss()
-			loss_empathy = loss_fct(logits_empathy.view(-1, self.empathy_num_labels), empathy_labels.float())
+			loss_empathy = loss_fct(logits_empathy.view(-1), empathy_labels.view(-1).float())
 
 			loss = lambda_EI * loss_empathy + lambda_RE * loss_rationales
 

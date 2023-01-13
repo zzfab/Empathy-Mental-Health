@@ -6,15 +6,21 @@ from collections import defaultdict
 
 
 def flat_accuracy(preds, labels, num_labels):
-        preds = preds.flatten()
-        labels = labels.flatten()
+	preds = preds.flatten()
+	labels = labels.flatten()
 
-        pred_flat = np.array([round(i*(num_labels-1)) for i in preds])
-        labels_flat = np.array([round(i*(num_labels-1)) for i in labels])
+	pred_flat = np.array([int(i/(1/num_labels)) for i in preds])
+	labels_flat = np.array([round(i*(num_labels-1)) for i in labels])
 
-        pred_flat = np.array([max(min(i, num_labels-1), 0) for i in pred_flat])
+	pred_flat = np.array([max(min(i, num_labels-1), 0) for i in pred_flat])
 
-        return np.sum(pred_flat == labels_flat) / len(labels_flat)
+	pred_dist = defaultdict(lambda: 0)
+	for i in pred_flat:
+			pred_dist[i] += 1
+	print('predicted distribution: ' + str(pred_dist))
+
+
+	return np.sum(pred_flat == labels_flat) / len(labels_flat)
 
 def flat_accuracy_rationale(preds, labels, classification_labels, lens, axis_=2):
 	preds_li = np.argmax(preds, axis=axis_)
@@ -38,15 +44,19 @@ def flat_accuracy_rationale(preds, labels, classification_labels, lens, axis_=2)
 	return np.mean(all_acc)
 
 
-def compute_f1(preds, labels, axis_=2):
-	pred_flat = np.argmax(preds, axis=axis_).flatten()
-	labels_flat = labels.flatten()
+def compute_f1(preds, labels, num_labels):
+        preds = preds.flatten()
+        labels = labels.flatten()
+        pred_flat = np.array([int(i/(1/num_labels)) for i in preds])
+        labels_flat = np.array([round(i*(num_labels-1)) for i in labels])
 
-	pos_f1 = f1_score(pred_flat, labels_flat, average = 'weighted')
-	micro_f1 = f1_score(pred_flat, labels_flat, average = 'micro')
-	macro_f1 = f1_score(pred_flat, labels_flat, average = 'macro')
+        pred_flat = np.array([max(min(i, num_labels-1), 0) for i in pred_flat])
 
-	return pos_f1, micro_f1, macro_f1 #np.sum(pred_flat == labels_flat) / len(labels_flat)
+        pos_f1 = f1_score(pred_flat, labels_flat, average = 'weighted')
+        micro_f1 = f1_score(pred_flat, labels_flat, average = 'micro')
+        macro_f1 = f1_score(pred_flat, labels_flat, average = 'macro')
+
+        return pos_f1, micro_f1, macro_f1 #np.sum(pred_flat == labels_flat) / len(labels_flat)
 
 def compute_f1_rationale(preds, labels, classification_labels, lens, axis_=2):
 	preds_li = np.argmax(preds, axis=axis_)
