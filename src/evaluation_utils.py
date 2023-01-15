@@ -21,7 +21,7 @@ def flat_accuracy(preds, labels, num_labels, ds = 'EPT'):
 	pred_dist = defaultdict(lambda: 0)
 	for i in pred_flat:
 			pred_dist[i] += 1
-	print('predicted distribution: ' + str(pred_dist))
+	#print('predicted distribution: ' + str(pred_dist))
 	return np.sum(pred_flat == labels_flat) / len(labels_flat)
 
 def flat_accuracy_rationale(preds, labels, classification_labels, lens, axis_=2):
