@@ -9,10 +9,7 @@ def flat_accuracy(preds, labels, num_labels, ds = 'EPT',normalized=False):
 	preds = preds.flatten()
 	labels = labels.flatten()
 
-	if ds == 'Buechel':
-		pred_flat = np.array([int(i-1/(1/num_labels)) for i in preds])
-		labels_flat = np.array([round(i*(num_labels-1)) for i in labels])
-	elif not normalized:
+	if not normalized:
 		pred_flat = np.array([int(i) for i in preds])
 		labels_flat = np.array([int(i) for i in labels])
 	else:
