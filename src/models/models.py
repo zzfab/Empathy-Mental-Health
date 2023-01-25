@@ -1,7 +1,7 @@
 from .roberta import RobertaForTokenClassification, RobertaModel
 import torch
 import torch.nn as nn
-from torch.nn import CrossEntropyLoss, MSELoss
+from torch.nn import CrossEntropyLoss, MSELoss,L1Loss
 import math
 import torch.nn.functional as F
 
@@ -127,7 +127,7 @@ class ResponderEncoder(BertPreTrainedModel):
 
 class BiEncoderAttentionWithRationaleClassification(nn.Module):
 
-	def __init__(self, hidden_dropout_prob=0.2, rationale_num_labels=2, empathy_num_labels=3, hidden_size=768, attn_heads = 1):
+	def __init__(self, hidden_dropout_prob=0.2, rationale_num_labels=2, empathy_num_labels=1, hidden_size=768, attn_heads = 1):
 		super().__init__()
 
 		self.dropout = nn.Dropout(hidden_dropout_prob)
@@ -228,7 +228,7 @@ class BiEncoderAttentionWithRationaleClassification(nn.Module):
 
 		if empathy_labels is not None:
 			loss_fct = MSELoss()
-			loss_empathy = loss_fct(logits_empathy.view(-1, 1), empathy_labels.float().view(1,-1))
+			loss_empathy = loss_fct(logits_empathy.view(-1), empathy_labels.view(-1).float())
 
 			loss = lambda_EI * loss_empathy + lambda_RE * loss_rationales
 			outputs = (loss, loss_empathy, loss_rationales) + outputs
@@ -237,11 +237,10 @@ class BiEncoderAttentionWithRationaleClassification(nn.Module):
 		return outputs  # (loss), (scores_empathy, scores_rationales), (hidden_states), (attentions)
 
 
-
 class RobertaClassificationHead(nn.Module):
 	"""Head for sentence-level classification tasks."""
 
-	def __init__(self, hidden_dropout_prob=0.1, hidden_size=768, empathy_num_labels=3):
+	def __init__(self, hidden_dropout_prob=0.1, hidden_size=768, empathy_num_labels=1):
 		super().__init__()
 
 		self.dense = nn.Linear(hidden_size, hidden_size)
