@@ -5,6 +5,9 @@ import math
 from collections import defaultdict
 
 
+
+
+
 def flat_accuracy(preds,
 				  labels,
 				  num_labels,
@@ -12,7 +15,7 @@ def flat_accuracy(preds,
 				  get_boundary=False):
 	preds = preds.flatten()
 	labels = labels.flatten()
-
+	print(f"flact accuracy with normalized={normalized} and boundery = {get_boundary}")
 	if normalized:
 		pred_flat = np.array([int(i / (1 / num_labels)) for i in preds])
 		labels_flat = np.array([round(i * (num_labels - 1)) for i in labels])
@@ -52,7 +55,7 @@ def flat_accuracy_rationale(preds, labels, classification_labels, lens, axis_=2)
 def compute_f1(preds, labels, num_labels, normalized=True,bounds=None):
 	preds = preds.flatten()
 	labels = labels.flatten()
-
+	print(f"flact accuracy with normalized={normalized} and boundery = {bounds}")
 	if normalized and bounds is None:
 		pred_flat = np.array([int(i / (1 / num_labels)) for i in preds])
 		labels_flat = np.array([round(i * (num_labels - 1)) for i in labels])
@@ -65,9 +68,10 @@ def compute_f1(preds, labels, num_labels, normalized=True,bounds=None):
 			for b in range(len(bounds) - 1, -1, -1):
 				# print('is ' + str(i) + ' less than ' + str(bounds[b]))
 				if i < bounds[b]:
-					temp_label = b
+					temp_label = int(b)
 			# print('label is : ' + str(temp_label))
 			pred_convert.append(temp_label)
+		#print(pred_convert)
 		pred_flat = pred_convert
 		labels_flat = np.array([int(i) for i in labels])
 	else:
