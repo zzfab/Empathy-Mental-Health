@@ -135,7 +135,7 @@ class BiEncoderAttentionWithRationaleClassification(nn.Module):
 		self.attn = MultiHeadAttention(attn_heads, hidden_size)
 		self.norm = Norm(hidden_size)
 		self.rationale_num_labels = rationale_num_labels
-		self.empathy_num_labels = empathy_num_labels
+		self.empathy_num_labels = 1
 		self.empathy_classifier = RobertaClassificationHead(hidden_size = 768)
 
 		self.apply(self._init_weights)
@@ -219,25 +219,20 @@ class BiEncoderAttentionWithRationaleClassification(nn.Module):
 		loss_empathy = 0.0
 
 		if rationale_labels is not None:
-			loss_fct = CrossEntropyLoss()
+			loss_fct = MSELoss()
 			# Only keep active parts of the loss
 			if attention_mask_RP is not None:
-				active_loss = attention_mask_RP.view(-1) == 1
-				active_logits = logits_rationales.view(-1, self.rationale_num_labels)
-				active_labels = torch.where(
-					active_loss, rationale_labels.view(-1), torch.tensor(loss_fct.ignore_index).type_as(rationale_labels)
-				)
-				loss_rationales = loss_fct(active_logits, active_labels)
+				loss_rationales = loss_fct(logits_rationales.view(-1, self.rationale_num_labels), rationale_labels.view(1,-1))
 			else:
-				loss_rationales = loss_fct(logits_rationales.view(-1, self.rationale_num_labels), rationale_labels.view(-1))
+				loss_rationales = loss_fct(logits_rationales.view(-1, self.rationale_num_labels), rationale_labels.view(1,-1))
 
 		if empathy_labels is not None:
 			loss_fct = MSELoss()
 			loss_empathy = loss_fct(logits_empathy.view(-1), empathy_labels.view(-1).float())
 
 			loss = lambda_EI * loss_empathy + lambda_RE * loss_rationales
-
 			outputs = (loss, loss_empathy, loss_rationales) + outputs
+
 
 		return outputs  # (loss), (scores_empathy, scores_rationales), (hidden_states), (attentions)
 
@@ -250,7 +245,7 @@ class RobertaClassificationHead(nn.Module):
 
 		self.dense = nn.Linear(hidden_size, hidden_size)
 		self.dropout = nn.Dropout(hidden_dropout_prob)
-		self.out_proj = nn.Linear(hidden_size, empathy_num_labels)
+		self.out_proj = nn.Linear(hidden_size, 1)
 
 	def forward(self, features, **kwargs):
 		x = features[:, :]  # take <s> token (equiv. to [CLS])
