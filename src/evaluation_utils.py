@@ -7,16 +7,14 @@ from collections import defaultdict
 
 
 def get_acc(preds, labels, num_labels,bounds):
-    pred_convert = []
-    for i in preds:
-        temp_label = num_labels-1
-        for b in range(len(bounds)-1, -1, -1):
-            #print('is ' + str(i) + ' less than ' + str(bounds[b]))
-            if i < bounds[b]:
-                temp_label = b
-        #print('label is : ' + str(temp_label))
-        pred_convert.append(temp_label)
-    return np.sum(np.array(pred_convert) == labels) / len(preds)
+	pred_convert = []
+	for i in preds:
+		temp_label = num_labels-1
+		for b in range(len(bounds)-1, -1, -1):
+			if i < bounds[b]:
+				temp_label = int(b)
+		pred_convert.append(temp_label)
+	return np.sum(np.array(pred_convert) == labels) / len(preds)
 
 def flat_accuracy(preds,
 				  labels,
@@ -29,16 +27,19 @@ def flat_accuracy(preds,
 		pred_flat = np.array([int(i / (1 / num_labels)) for i in preds])
 		labels_flat = np.array([round(i * (num_labels - 1)) for i in labels])
 		pred_flat = np.array([max(min(i, num_labels - 1), 0) for i in pred_flat])
+		acc = np.sum(pred_flat == labels_flat) / len(labels_flat)
 	elif normalized and bounds:
-		return get_acc(preds, labels, num_labels,bounds)
+		acc = get_acc(preds, labels, num_labels,bounds)
 	else:
 		pred_flat = np.array([int(i) for i in preds])
 		labels_flat = np.array([int(i) for i in labels])
+		acc=np.sum(pred_flat == labels_flat) / len(labels_flat)
 
 	pred_dist = defaultdict(lambda: 0)
 	for i in pred_flat:
 			pred_dist[i] += 1
-	return np.sum(pred_flat == labels_flat) / len(labels_flat)
+	#print(acc)
+	return acc
 
 def flat_accuracy_rationale(preds, labels, classification_labels, lens, axis_=2):
 	preds_li = np.argmax(preds, axis=axis_)
@@ -71,7 +72,6 @@ def get_f1(preds, labels, bounds,num_labels,mode='macro'):
 				temp_label = b
 		pred_convert.append(temp_label)
 	labels = [int(i * (num_labels-1)) for i in labels]
-	#print(labels,pred_convert)
 	return f1_score(labels, pred_convert, average=mode)
 
 def compute_f1(preds, labels, num_labels, normalized=True,bounds=None):
@@ -86,7 +86,9 @@ def compute_f1(preds, labels, num_labels, normalized=True,bounds=None):
 		micro_f1 = f1_score(pred_flat, labels_flat, average='micro')
 		macro_f1 = f1_score(pred_flat, labels_flat, average='macro')
 	elif normalized and bounds:
-		get_f1(preds, labels, bounds,num_labels,mode='macro')
+		pred_flat = np.array([int(i / (1 / num_labels)) for i in preds])
+		pred_flat = np.array([max(min(i, num_labels - 1), 0) for i in pred_flat])
+		get_f1(pred_flat, labels, bounds,num_labels,mode='macro')
 		pos_f1 = get_f1(preds, labels, bounds,num_labels,mode='weighted')
 		micro_f1 = get_f1(preds, labels, bounds,num_labels,mode='micro')
 		macro_f1 = get_f1(preds, labels, bounds,num_labels,mode='macro')
