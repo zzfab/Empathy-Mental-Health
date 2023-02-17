@@ -7,6 +7,17 @@ from collections import defaultdict
 
 
 def get_acc(preds, labels, num_labels,bounds):
+	"""
+	Calculates the accuracy for a batch of predictions with bounds.
+	Args:
+		preds:
+		labels:
+		num_labels:
+		bounds:
+
+	Returns:
+
+	"""
 	pred_convert = []
 	for i in preds:
 		temp_label = num_labels-1
@@ -21,23 +32,50 @@ def flat_accuracy(preds,
 				  num_labels,
 				  normalized=True,
 				  bounds=None):
+	"""
+	Calculates the accuracy for a batch of predictions.
+	Args:
+		preds: list of predictions
+		labels: list of labels
+		num_labels: number of labels
+		normalized: flag if the predictions are normalized
+		bounds: bounds for the normalized predictions
+
+	Returns:
+		accuracy
+
+	"""
 	preds = preds.flatten()
 	labels = labels.flatten()
-	if normalized and bounds is not None:
-		pred_flat = np.array([int(i / (1 / num_labels)) for i in preds])
+	if normalized and bounds is None:
+		pred_flat = np.array([int(i / (1 / num_labels-1)) for i in preds])
 		labels_flat = np.array([round(i * (num_labels - 1)) for i in labels])
 		pred_flat = np.array([max(min(i, num_labels - 1), 0) for i in pred_flat])
 		acc = np.sum(pred_flat == labels_flat) / len(labels_flat)
-	elif normalized and bounds:
-		acc = get_acc(preds, labels, num_labels,bounds)
+		pred_dist = defaultdict(lambda: 0)
+		for i in pred_flat:
+			pred_dist[i] += 1
+		#print(pred_dist)
+	elif normalized and bounds is not None:
+		pred_flat = np.array([int(i / (1 / num_labels)) for i in preds])
+		labels_flat = np.array([round(i * (num_labels - 1)) for i in labels])
+		pred_flat = np.array([max(min(i, num_labels - 1), 0) for i in pred_flat])
+		acc = get_acc(pred_flat, labels_flat, num_labels,bounds)
+		pred_dist = defaultdict(lambda: 0)
+		labels_dist = defaultdict(lambda: 0)
+		for i in pred_flat:
+			pred_dist[i] += 1
+		for i in labels_flat:
+			labels_dist[i] += 1
 	else:
 		pred_flat = np.array([int(i) for i in preds])
 		labels_flat = np.array([int(i) for i in labels])
+		pred_flat = np.array([max(min(i, num_labels - 1), 0) for i in pred_flat])
 		acc=np.sum(pred_flat == labels_flat) / len(labels_flat)
-
-	pred_dist = defaultdict(lambda: 0)
-	for i in pred_flat:
+		pred_dist = defaultdict(lambda: 0)
+		for i in pred_flat:
 			pred_dist[i] += 1
+		#print(pred_dist)
 	#print(acc)
 	return acc
 
