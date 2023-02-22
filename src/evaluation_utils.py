@@ -48,34 +48,28 @@ def flat_accuracy(preds,
 	preds = preds.flatten()
 	labels = labels.flatten()
 	if normalized and bounds is None:
-		pred_flat = np.array([int(i / (1 / num_labels-1)) for i in preds])
+		pred_flat = np.array([round(i/(1/(num_labels-1))) for i in preds])
 		labels_flat = np.array([round(i * (num_labels - 1)) for i in labels])
 		pred_flat = np.array([max(min(i, num_labels - 1), 0) for i in pred_flat])
 		acc = np.sum(pred_flat == labels_flat) / len(labels_flat)
-		pred_dist = defaultdict(lambda: 0)
-		for i in pred_flat:
-			pred_dist[i] += 1
-		#print(pred_dist)
+
 	elif normalized and bounds is not None:
-		pred_flat = np.array([int(i / (1 / num_labels)) for i in preds])
+		pred_flat = np.array([round(i/(1/(num_labels-1))) for i in preds])
 		labels_flat = np.array([round(i * (num_labels - 1)) for i in labels])
 		pred_flat = np.array([max(min(i, num_labels - 1), 0) for i in pred_flat])
 		acc = get_acc(pred_flat, labels_flat, num_labels,bounds)
-		pred_dist = defaultdict(lambda: 0)
-		labels_dist = defaultdict(lambda: 0)
-		for i in pred_flat:
-			pred_dist[i] += 1
-		for i in labels_flat:
-			labels_dist[i] += 1
-	else:
-		pred_flat = np.array([int(i) for i in preds])
-		labels_flat = np.array([int(i) for i in labels])
+	elif normalized is False and bounds:
+		pred_flat = np.array([round(i) for i in preds])
+		labels_flat = np.array([round(i) for i in labels])
 		pred_flat = np.array([max(min(i, num_labels - 1), 0) for i in pred_flat])
+		acc = get_acc(pred_flat, labels_flat, num_labels,bounds)
+	else:
+		pred_flat = np.array([round(i) for i in preds])
+		labels_flat = np.array([round(i) for i in labels])
+		pred_flat = np.array([max(min(i, num_labels - 1), 0) for i in pred_flat])
+		#pred_flat = np.array([max(min(i, num_labels - 1), 0) for i in pred_flat])
 		acc=np.sum(pred_flat == labels_flat) / len(labels_flat)
-		pred_dist = defaultdict(lambda: 0)
-		for i in pred_flat:
-			pred_dist[i] += 1
-		#print(pred_dist)
+
 	#print(acc)
 	return acc
 
@@ -116,7 +110,7 @@ def compute_f1(preds, labels, num_labels, normalized=True,bounds=None):
 	preds = preds.flatten()
 	labels = labels.flatten()
 	if normalized and bounds is None:
-		pred_flat = np.array([int(i / (1 / num_labels)) for i in preds])
+		pred_flat = np.array([round(i/(1/num_labels-1)) for i in preds])
 		labels_flat = np.array([round(i * (num_labels - 1)) for i in labels])
 		pred_flat = np.array([max(min(i, num_labels - 1), 0) for i in pred_flat])
 
@@ -124,15 +118,22 @@ def compute_f1(preds, labels, num_labels, normalized=True,bounds=None):
 		micro_f1 = f1_score(pred_flat, labels_flat, average='micro')
 		macro_f1 = f1_score(pred_flat, labels_flat, average='macro')
 	elif normalized and bounds:
-		pred_flat = np.array([int(i / (1 / num_labels)) for i in preds])
+		pred_flat = np.array([round(i/(1/num_labels-1)) for i in preds])
+		labels_flat = np.array([round(i * (num_labels - 1)) for i in labels])
 		pred_flat = np.array([max(min(i, num_labels - 1), 0) for i in pred_flat])
-		get_f1(pred_flat, labels, bounds,num_labels,mode='macro')
-		pos_f1 = get_f1(preds, labels, bounds,num_labels,mode='weighted')
-		micro_f1 = get_f1(preds, labels, bounds,num_labels,mode='micro')
-		macro_f1 = get_f1(preds, labels, bounds,num_labels,mode='macro')
+		#get_f1(pred_flat, labels_flat, bounds,num_labels,mode='macro')
+		pos_f1 = get_f1(pred_flat, labels_flat, bounds,num_labels,mode='weighted')
+		micro_f1 = get_f1(pred_flat, labels_flat, bounds,num_labels,mode='micro')
+		macro_f1 = get_f1(pred_flat, labels_flat, bounds,num_labels,mode='macro')
+	elif normalized is False and bounds:
+		pred_flat = np.array([round(i) for i in preds])
+		labels_flat = np.array([round(i) for i in labels])
+		pos_f1 = get_f1(pred_flat, labels_flat, bounds,num_labels,mode='weighted')
+		micro_f1 = get_f1(pred_flat, labels_flat, bounds,num_labels,mode='micro')
+		macro_f1 = get_f1(pred_flat, labels_flat, bounds,num_labels,mode='macro')
 	else:
-		pred_flat = np.array([int(i) for i in preds])
-		labels_flat = np.array([int(i) for i in labels])
+		pred_flat = np.array([round(i) for i in preds])
+		labels_flat = np.array([round(i) for i in labels])
 		pos_f1 = f1_score(pred_flat, labels_flat, average = 'weighted')
 		micro_f1 = f1_score(pred_flat, labels_flat, average = 'micro')
 		macro_f1 = f1_score(pred_flat, labels_flat, average = 'macro')
