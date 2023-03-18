@@ -95,51 +95,43 @@ def flat_accuracy_rationale(preds, labels, classification_labels, lens, axis_=2)
 	return np.mean(all_acc)
 
 
-def get_f1(preds, labels, bounds,num_labels,mode='macro'):
+def get_f1(preds, labels, bounds, num_labels, mode='macro'):
 	pred_convert = []
 	for i in preds:
-		temp_label = num_labels-1
-		for b in range(len(bounds)-1, -1, -1):
+		temp_label = num_labels - 1
+		for b in range(len(bounds) - 1, -1, -1):
 			if i < bounds[b]:
 				temp_label = b
 		pred_convert.append(temp_label)
-	labels = [int(i * (num_labels-1)) for i in labels]
+	labels = [int(i * (num_labels - 1)) for i in labels]
 	return f1_score(labels, pred_convert, average=mode)
 
-def compute_f1(preds, labels, num_labels, normalized=True,bounds=None):
+def compute_f1(preds, labels, num_labels, normalized=True, bounds=None):
 	preds = preds.flatten()
 	labels = labels.flatten()
-	if normalized and bounds is None:
-		pred_flat = np.array([round(i/(1/num_labels-1)) for i in preds])
-		labels_flat = np.array([round(i * (num_labels - 1)) for i in labels])
-		pred_flat = np.array([max(min(i, num_labels - 1), 0) for i in pred_flat])
 
-		pos_f1 = f1_score(pred_flat, labels_flat, average='weighted')
-		micro_f1 = f1_score(pred_flat, labels_flat, average='micro')
-		macro_f1 = f1_score(pred_flat, labels_flat, average='macro')
-	elif normalized and bounds:
-		pred_flat = np.array([round(i/(1/num_labels-1)) for i in preds])
+	if normalized and bounds is None:
+		pred_flat = np.array([round(i * (num_labels - 1)) for i in preds])
 		labels_flat = np.array([round(i * (num_labels - 1)) for i in labels])
-		pred_flat = np.array([max(min(i, num_labels - 1), 0) for i in pred_flat])
-		#get_f1(pred_flat, labels_flat, bounds,num_labels,mode='macro')
-		pos_f1 = get_f1(pred_flat, labels_flat, bounds,num_labels,mode='weighted')
-		micro_f1 = get_f1(pred_flat, labels_flat, bounds,num_labels,mode='micro')
-		macro_f1 = get_f1(pred_flat, labels_flat, bounds,num_labels,mode='macro')
-	elif normalized is False and bounds:
-		pred_flat = np.array([round(i) for i in preds])
-		labels_flat = np.array([round(i) for i in labels])
-		pos_f1 = get_f1(pred_flat, labels_flat, bounds,num_labels,mode='weighted')
-		micro_f1 = get_f1(pred_flat, labels_flat, bounds,num_labels,mode='micro')
-		macro_f1 = get_f1(pred_flat, labels_flat, bounds,num_labels,mode='macro')
+	elif normalized and bounds:
+		pred_flat = np.array([round(i * (num_labels - 1)) for i in preds])
+		labels_flat = np.array([round(i * (num_labels - 1)) for i in labels])
 	else:
 		pred_flat = np.array([round(i) for i in preds])
 		labels_flat = np.array([round(i) for i in labels])
-		pos_f1 = f1_score(pred_flat, labels_flat, average = 'weighted')
-		micro_f1 = f1_score(pred_flat, labels_flat, average = 'micro')
-		macro_f1 = f1_score(pred_flat, labels_flat, average = 'macro')
 
-	return pos_f1, micro_f1, macro_f1 #np.sum(pred_flat == labels_flat) / len(labels_flat)
+	pred_flat = np.array([max(min(i, num_labels - 1), 0) for i in pred_flat])
 
+	if bounds:
+		pos_f1 = get_f1(pred_flat, labels_flat, bounds, num_labels, mode='weighted')
+		micro_f1 = get_f1(pred_flat, labels_flat, bounds, num_labels, mode='micro')
+		macro_f1 = get_f1(pred_flat, labels_flat, bounds, num_labels, mode='macro')
+	else:
+		pos_f1 = f1_score(pred_flat, labels_flat, average='weighted')
+		micro_f1 = f1_score(pred_flat, labels_flat, average='micro')
+		macro_f1 = f1_score(pred_flat, labels_flat, average='macro')
+
+	return pos_f1, micro_f1, macro_f1
 def compute_f1_rationale(preds, labels, classification_labels, lens, axis_=2):
 	preds_li = np.argmax(preds, axis=axis_)
 
