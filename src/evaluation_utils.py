@@ -23,7 +23,7 @@ def get_acc(preds, labels, num_labels,bounds):
 		temp_label = num_labels-1
 		for b in range(len(bounds)-1, -1, -1):
 			if i < bounds[b]:
-				temp_label = int(b)
+				temp_label = round(b)
 		pred_convert.append(temp_label)
 	return np.sum(np.array(pred_convert) == labels) / len(preds)
 
@@ -47,39 +47,24 @@ def flat_accuracy(preds,
 	"""
 	preds = preds.flatten()
 	labels = labels.flatten()
-	if normalized and bounds is None:
-		pred_flat = np.array([round(i/(1/(num_labels-1))) for i in preds])
+	if bounds:
+		pred_flat = np.array([round(i * (num_labels - 1)) for i in preds])
 		labels_flat = np.array([round(i * (num_labels - 1)) for i in labels])
-		pred_flat = np.array([max(min(i, num_labels - 1), 0) for i in pred_flat])
-		acc = np.sum(pred_flat == labels_flat) / len(labels_flat)
-
-	elif normalized and bounds is not None:
-		pred_flat = np.array([round(i/(1/(num_labels-1))) for i in preds])
-		labels_flat = np.array([round(i * (num_labels - 1)) for i in labels])
-		pred_flat = np.array([max(min(i, num_labels - 1), 0) for i in pred_flat])
-		acc = get_acc(pred_flat, labels_flat, num_labels,bounds)
-	elif normalized is False and bounds:
-		pred_flat = np.array([round(i) for i in preds])
-		labels_flat = np.array([round(i) for i in labels])
 		pred_flat = np.array([max(min(i, num_labels - 1), 0) for i in pred_flat])
 		acc = get_acc(pred_flat, labels_flat, num_labels,bounds)
 	else:
-		pred_flat = np.array([round(i) for i in preds])
-		labels_flat = np.array([round(i) for i in labels])
+		pred_flat = np.array([round(i* (num_labels - 1)) for i in preds])
+		labels_flat = np.array([round(i* (num_labels - 1)) for i in labels])
 		pred_flat = np.array([max(min(i, num_labels - 1), 0) for i in pred_flat])
 		#pred_flat = np.array([max(min(i, num_labels - 1), 0) for i in pred_flat])
 		acc=np.sum(pred_flat == labels_flat) / len(labels_flat)
-
 	#print(acc)
 	return acc
 
 def flat_accuracy_rationale(preds, labels, classification_labels, lens, axis_=2):
 	preds_li = np.argmax(preds, axis=axis_)
-
 	all_acc = []
-
 	for idx, elem in enumerate(preds_li):
-
 		curr_pred = preds_li[idx]
 		curr_pred = curr_pred[1:]
 		curr_pred = curr_pred[:lens[idx]]
@@ -91,7 +76,6 @@ def flat_accuracy_rationale(preds, labels, classification_labels, lens, axis_=2)
 		curr_acc = np.sum(np.asarray(curr_label) == np.asarray(curr_pred)) / len(curr_label)
 
 		all_acc.append(curr_acc)
-
 	return np.mean(all_acc)
 
 
@@ -103,23 +87,15 @@ def get_f1(preds, labels, bounds, num_labels, mode='macro'):
 			if i < bounds[b]:
 				temp_label = b
 		pred_convert.append(temp_label)
-	labels = [int(i * (num_labels - 1)) for i in labels]
+	#labels = [round(i * (num_labels - 1)) for i in labels]
 	return f1_score(labels, pred_convert, average=mode)
 
 def compute_f1(preds, labels, num_labels, normalized=True, bounds=None):
 	preds = preds.flatten()
 	labels = labels.flatten()
 
-	if normalized and bounds is None:
-		pred_flat = np.array([round(i * (num_labels - 1)) for i in preds])
-		labels_flat = np.array([round(i * (num_labels - 1)) for i in labels])
-	elif normalized and bounds:
-		pred_flat = np.array([round(i * (num_labels - 1)) for i in preds])
-		labels_flat = np.array([round(i * (num_labels - 1)) for i in labels])
-	else:
-		pred_flat = np.array([round(i) for i in preds])
-		labels_flat = np.array([round(i) for i in labels])
-
+	pred_flat = np.array([round(i* (num_labels - 1)) for i in preds])
+	labels_flat = np.array([round(i* (num_labels - 1)) for i in labels])
 	pred_flat = np.array([max(min(i, num_labels - 1), 0) for i in pred_flat])
 
 	if bounds:
